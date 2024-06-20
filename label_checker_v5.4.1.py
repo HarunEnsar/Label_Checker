@@ -122,14 +122,17 @@ undoable_actions = []
 def update_display(event):
     image_path: str = display_data['image_path']
     label_path: str = display_data['label_path']
+
     coordinates: list = display_data['coordinates']
+
     image_name = os.path.basename(image_path)
     label_name = os.path.basename(label_path)
-    print(os.path.basename(image_path))
+
     with open(label_path, 'r') as file:
         label_file_contents = file.read()
+
     if os.stat(label_path).st_size == 0:
-        print(f"Etiket dosyası boş: {label_path}")
+        print('Etiket dosyası boş')
     else:
         print(f'{image_name}:{label_name}\nEtiket:\n{label_file_contents}\n----')
         root.title(
@@ -201,9 +204,6 @@ def update_display(event):
                     outline=label_color,
                     width=2
                 )
-    print(
-        f"Taşıt sayısı: {vehicle_count}, İnsan sayısı: {person_count}, UAP sayısı: {uap_count}, UAI sayısı: {uai_count}"
-    )
     text_label.config(
         text=f"Taşıt sayısı: {vehicle_count}, İnsan sayısı: {person_count}, UAP sayısı: {uap_count}, UAI sayısı: {uai_count}"
     )
