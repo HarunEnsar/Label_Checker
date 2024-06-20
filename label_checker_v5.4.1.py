@@ -156,8 +156,6 @@ def update_display(event):
         print(f"Error loading image: {e}")
         return
 
-    canvas.delete('all')
-
     canvas.create_image((0, 0), image=canvas_current_image, anchor='nw')
 
     vehicle_count = 0
@@ -228,10 +226,6 @@ canvas.pack()
 
 
 def move_files(image_old_path, image_new_path, label_old_path, label_new_path):
-    print(
-        f"Resim ve etiket dosyaları taşınıyor: {image_old_path}, {label_old_path} --> {image_new_path}, {label_new_path}"
-    )
-
     shutil.move(
         image_old_path,
         image_new_path
