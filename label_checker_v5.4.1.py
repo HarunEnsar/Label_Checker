@@ -55,7 +55,7 @@ os.makedirs(str.format('{}/labels', rejected_folder), exist_ok=True)
 
 root = tkinter.Toplevel()
 root.title('Label Checker')
-root.geometry('1440x900+0+0')
+root.geometry('1440x930+0+0')
 root.resizable(False, False)
 
 label_color_mapping = {
