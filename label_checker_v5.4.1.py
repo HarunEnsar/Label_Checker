@@ -191,7 +191,7 @@ def update_display(event):
         f"Taşıt sayısı: {vehicle_count}, İnsan sayısı: {person_count}, UAP sayısı: {uap_count}, UAI sayısı: {uai_count}"
     )
     text_label.config(
-        text=f"Resim: {image_name}, Label: {label_name} Taşıt sayısı: {vehicle_count}, İnsan sayısı: {person_count}, UAP sayısı: {uap_count}, UAI sayısı: {uai_count}"
+        text=f"Taşıt sayısı: {vehicle_count}, İnsan sayısı: {person_count}, UAP sayısı: {uap_count}, UAI sayısı: {uai_count}"
     )
 
 
