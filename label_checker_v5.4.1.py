@@ -131,8 +131,10 @@ def update_display(event):
     if os.stat(label_path).st_size == 0:
         print(f"Etiket dosyası boş: {label_path}")
     else:
-        print(f"{image_name}:{label_name}\n Etiket: \n{label_file_contents}")
-        root.title(f'Label Checker----{image_name} ----- {label_name} ----')
+        print(f'{image_name}:{label_name}\nEtiket:\n{label_file_contents}\n----')
+        root.title(
+            f'Label Checker - {display_data["formatted_file_number"]} - {image_name} | {label_name}'
+        )
 
     if os.sep == '\\':
         image_path = image_path.replace('/', os.sep)
@@ -271,7 +273,8 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
         display_data = {
             'image_path': image_path,
             'label_path': label_path,
-            'coordinates': coordinates
+            'coordinates': coordinates,
+            'formatted_file_number': f'{file_number}/{len(zipped_list)}'
         }
 
         tkObj.event_generate('<<update_display>>')
