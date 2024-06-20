@@ -16,6 +16,26 @@ from datetime import datetime
 usage='Boşluk tuşu ile bir sonraki resme geçebilirsiniz. Onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, geri almak için "u" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız.'
 """
 
+label_color_mapping: dict = {
+    '0': 'orange',
+    '1': 'green',
+    '2': 'red',
+    '3': 'blue'
+}
+display_data: dict = {
+    'image_path': '',
+    'label_path': '',
+    'coordinates': [],
+    'formatted_file_number': ''
+}
+canvas_current_image: ImageTk.PhotoImage = None
+undoable_actions: list = []
+key_event: threading.Event = threading.Event()
+pressed_key_obj: dict = {'char': ''}
+
+root: tkinter.Tk = tkinter.Tk(className='Label Checker Root')
+root.withdraw()
+
 messagebox.showwarning(
     'UYARI!!', 'Boşluk tuşu ile bir sonraki resme geçebilirsiniz. Onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, geri almak için "u" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız'
 )
@@ -63,25 +83,6 @@ os.makedirs(str.format('{}/labels', approved_folder), exist_ok=True)
 os.makedirs(str.format('{}/images', rejected_folder), exist_ok=True)
 os.makedirs(str.format('{}/labels', rejected_folder), exist_ok=True)
 
-root = tkinter.Toplevel()
-root.title('Label Checker')
-root.geometry('1440x930+0+0')
-root.resizable(False, False)
-
-label_color_mapping = {
-    '0': 'orange',
-    '1': 'green',
-    '2': 'red',
-    '3': 'blue'
-}
-
-display_data: dict = {}
-
-canvas_current_image = None
-
-text_label = tkinter.Label(root, text="", font=('Helvetica', 14))
-text_label.pack()
-
 
 class Action:
     def __init__(self, name, do_function, undo_function, do_args=[], do_kwargs={}, undo_args=[], undo_kwargs={}):
@@ -116,12 +117,35 @@ class Action:
         self._undo_function(*new_args, **new_kwargs)
 
 
-undoable_actions = []
+main_window: tkinter.Toplevel = tkinter.Toplevel(root)
+main_window.title('Label Checker')
+main_window.geometry('1440x930+0+0')
+main_window.resizable(False, False)
+main_window.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
+
+text_label: tkinter.Label = tkinter.Label(
+    main_window,
+    text="",
+    font=('Helvetica', 14)
+)
+text_label.pack()
+
+canvas: tkinter.Canvas = tkinter.Canvas(
+    main_window,
+    bg='white',
+    width=1440,
+    height=900
+)
+canvas.pack()
 
 
-def update_display(event):
+def update_display(event) -> None:
     image_path: str = display_data['image_path']
     label_path: str = display_data['label_path']
+
+    if not os.path.exists(image_path) or not os.path.exists(label_path):
+        print(f'Image or label file not found: {image_path}, {label_path}')
+        return
 
     coordinates: list = display_data['coordinates']
 
@@ -135,7 +159,7 @@ def update_display(event):
         print('Etiket dosyası boş')
     else:
         print(f'{image_name}:{label_name}\nEtiket:\n{label_file_contents}\n----')
-        root.title(
+        main_window.title(
             f'Label Checker - {display_data["formatted_file_number"]} - {image_name} | {label_name}'
         )
 
@@ -207,25 +231,13 @@ def update_display(event):
     )
 
 
-last_pressed_key = tkinter.StringVar(value='')
-key_event: threading.Event = threading.Event()
-
-
-def key_press(e):
-    last_pressed_key.set(chr(e.keycode).lower())
-    global key_event
+def key_press(e) -> None:
+    global pressed_key_obj, key_event
+    pressed_key_obj['char'] = chr(e.keycode).lower()
     key_event.set()
 
 
-root.bind('<Key>', key_press)
-root.bind('<Escape>', lambda e: root.quit())
-root.bind('<<update_display>>', update_display)
-
-canvas = tkinter.Canvas(root, bg='white', width=1440, height=900)
-canvas.pack()
-
-
-def move_files(image_old_path, image_new_path, label_old_path, label_new_path):
+def move_files(image_old_path, image_new_path, label_old_path, label_new_path) -> None:
     shutil.move(
         image_old_path,
         image_new_path
@@ -236,12 +248,10 @@ def move_files(image_old_path, image_new_path, label_old_path, label_new_path):
     )
 
 
-def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tkinter.StringVar):
-    file_number = 0
-
-    zipped_list = list(zip(image_files, label_files))
-
+def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_obj: dict, display_data_obj: dict) -> None:
+    file_number = 1
     list_index = 0
+    zipped_list = list(zip(image_files, label_files))
 
     while list_index < len(zipped_list):
         image_file, label_file = zipped_list[list_index]
@@ -265,13 +275,10 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
 
             coordinates.append(coordinates_for_the_image)
 
-        global display_data
-        display_data = {
-            'image_path': image_path,
-            'label_path': label_path,
-            'coordinates': coordinates,
-            'formatted_file_number': f'{file_number}/{len(zipped_list)}'
-        }
+        display_data_obj['image_path'] = image_path
+        display_data_obj['label_path'] = label_path
+        display_data_obj['coordinates'] = coordinates
+        display_data_obj['formatted_file_number'] = f'{file_number}/{len(zipped_list)}'
 
         tkObj.event_generate('<<update_display>>')
 
@@ -279,11 +286,7 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
             key_event.wait()
             key_event.clear()
 
-            if key_var.get() == 'q':
-                print('Exiting...')
-                tkObj.quit()
-                return
-            elif key_var.get() == 'a':
+            if key_obj.get('char') == 'a':
                 action = Action(
                     'Etiket-Onay',
                     move_files,
@@ -330,7 +333,7 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
                 file_number += 1
 
                 break
-            elif key_var.get() == 'r':
+            elif key_obj.get('char') == 'r':
                 action = Action(
                     'Etiket-Red',
                     move_files,
@@ -377,7 +380,7 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
                 file_number += 1
 
                 break
-            elif key_var.get() == 'u':
+            elif key_obj.get('char') == 'u':
                 if len(undoable_actions) == 0 or list_index == 0:
                     continue
 
@@ -387,7 +390,7 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
                 file_number -= 1
 
                 break
-            elif key_var.get() == ' ':
+            elif key_obj.get('char') == ' ':
                 file_number += 1
                 break
             else:
@@ -396,8 +399,27 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_var: tk
         list_index += 1
 
 
+def close_windows(e) -> None:
+    main_window.destroy()
+    main_window.master.destroy()
+
+
+main_window.bind('<Key>', key_press)
+main_window.bind('<Escape>', close_windows)
+main_window.bind('<q>', close_windows)
+main_window.bind('<Q>', close_windows)
+main_window.bind('<<update_display>>', update_display)
+
 label_thread = threading.Thread(
-    target=label_thread_main, args=[root, key_event, last_pressed_key], daemon=True)
+    target=label_thread_main,
+    args=[
+        main_window,
+        key_event,
+        pressed_key_obj,
+        display_data
+    ],
+    daemon=True
+)
 label_thread.start()
 
 root.mainloop()
