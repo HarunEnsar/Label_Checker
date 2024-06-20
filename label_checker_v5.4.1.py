@@ -20,11 +20,21 @@ messagebox.showwarning(
     'UYARI!!', 'Boşluk tuşu ile bir sonraki resme geçebilirsiniz. Onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, geri almak için "u" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız'
 )
 
-messagebox.showinfo("Resim", "Resim yolunu seçiniz.")
-image_folder_path = filedialog.askdirectory()
-messagebox.showinfo("Etiket", "Etiket yolunu seçiniz.")
-label_folder_path = filedialog.askdirectory()
+image_folder_path = filedialog.askdirectory(
+    mustexist=True,
+    title='Resimlerin bulunduğu klasör'
+)
 
+if image_folder_path == '':
+    exit(0)
+
+label_folder_path = filedialog.askdirectory(
+    mustexist=True,
+    title='Etiketlerin bulunduğu klasör'
+)
+
+if label_folder_path == '':
+    exit(0)
 
 image_files = [
     f for f in os.listdir(image_folder_path)
