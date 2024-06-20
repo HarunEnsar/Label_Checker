@@ -143,6 +143,8 @@ def update_display(event):
         image_path = image_path.replace('\\', os.sep)
         label_path = label_path.replace('\\', os.sep)
 
+    canvas.delete('all')
+
     global canvas_current_image
     try:
         canvas_current_image = ImageTk.PhotoImage(
