@@ -233,7 +233,9 @@ def update_display(event) -> None:
 
 def key_press(e) -> None:
     global pressed_key_obj, key_event
-    pressed_key_obj['char'] = chr(e.keycode).lower()
+    pressed_key_obj['char'] = e.char.lower()
+    pressed_key_obj['keycode'] = e.keycode
+    pressed_key_obj['keysym'] = e.keysym
     key_event.set()
 
 
@@ -390,8 +392,14 @@ def label_thread_main(tkObj: tkinter.Tk, key_event: threading.Event, key_obj: di
                 file_number -= 1
 
                 break
-            elif key_obj.get('char') == ' ':
+            elif key_obj.get('keysym') == 'Right':
                 file_number += 1
+                break
+            elif key_obj.get('keysym') == 'Left':
+                if file_number > 1 and list_index >= 1:
+                    file_number -= 1
+                    list_index -= 1
+                list_index -= 1
                 break
             else:
                 continue
