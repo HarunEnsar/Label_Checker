@@ -13,7 +13,7 @@ from PIL import ImageTk, Image
 from datetime import datetime
 
 """
-usage='Boşluk tuşu ile bir sonraki resme geçebilirsiniz. Onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, geri almak için "u" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız.'
+usage='Bir sonraki resme geçmek için "->" tuşuna, onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, işlemi geri almak için "<-" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız.'
 """
 
 label_color_mapping: dict = {
@@ -37,7 +37,7 @@ root: tkinter.Tk = tkinter.Tk(className='Label Checker Root')
 root.withdraw()
 
 messagebox.showwarning(
-    'UYARI!!', 'Boşluk tuşu ile bir sonraki resme geçebilirsiniz. Onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, geri almak için "u" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız'
+    'UYARI!!', 'Bir sonraki resme geçmek için "->" tuşuna, onaylamak için "a" tuşuna, reddetmek için "r" tuşuna, işlemi geri almak için "<-" tuşuna ve çıkmak için ise "q" veya da "esc" tuşuna basınız.'
 )
 
 image_folder_path = filedialog.askdirectory(
